@@ -1,0 +1,15 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+}
+
+.bg-peach-50 {
+  background-color: #FFF7ED;
+}
+
+.border-peach-200 {
+  border-color: #FFDAB9;
+}
