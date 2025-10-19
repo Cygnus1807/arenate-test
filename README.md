@@ -30,6 +30,7 @@ React + Vite frontend that integrates with Supabase for authentication, events, 
 ## Supabase notes
 - Team registrations now require the captain to have a completed profile and will automatically respect team member limits enforced in SQL triggers.
 - `SUPABASE_SERVICE_ROLE_KEY` is only needed for local scripts (e.g. `scripts/seedEvents.mjs`). Keep it private and never expose it in client code.
+- **Database optimizations applied**: 19 performance indexes, 15 validation constraints, 4 helper functions, and 3 views for faster queries. See `DATABASE_IMPROVEMENTS.md` for details.
 
 ## Troubleshooting
 - Vite will refuse to start on Node < 20.19.0. Upgrade Node if you see `TypeError: crypto.hash is not a function`.

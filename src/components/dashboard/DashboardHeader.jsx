@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import CollegeLogo from '../shared/CollegeLogo';
-import { BellIcon, CloseIcon, MenuIcon, UserCircleIcon } from '../shared/Icons';
+import { CloseIcon, MenuIcon, UserCircleIcon } from '../shared/Icons';
 
 const DashboardHeader = ({ userEmail, onSignOut, onOpenProfile }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const handleSignOut = () => {
-    onSignOut?.();
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    await onSignOut?.();
+    setSigningOut(false);
     setIsMenuOpen(false);
   };
 
@@ -21,31 +25,16 @@ const DashboardHeader = ({ userEmail, onSignOut, onOpenProfile }) => {
         <div className="flex items-center justify-between h-16">
           <CollegeLogo />
           <div className="flex items-center space-x-4">
-            <div className="relative hidden md:block">
-              <span className="absolute top-1.5 left-2.5">
-                <BellIcon />
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                </span>
-              </span>
-            </div>
             <div className="hidden md:flex flex-col text-right">
               {userEmail && <span className="text-xs font-medium text-gray-500">{userEmail}</span>}
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={handleProfile}
-                  className="text-sm font-semibold text-gray-600 hover:text-gray-800"
-                >
-                  My profile
-                </button>
+              <div className="flex items-center justify-end">
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="text-sm font-semibold text-green-600 hover:text-green-700"
+                  disabled={signingOut}
+                  className="text-sm font-semibold text-green-600 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Sign out
+                  {signingOut ? 'Signing out...' : 'Sign out'}
                 </button>
               </div>
             </div>
@@ -53,6 +42,7 @@ const DashboardHeader = ({ userEmail, onSignOut, onOpenProfile }) => {
               type="button"
               onClick={handleProfile}
               className="hidden md:block rounded-full border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:text-gray-800"
+              aria-label="Open profile"
             >
               <UserCircleIcon />
             </button>
@@ -65,18 +55,16 @@ const DashboardHeader = ({ userEmail, onSignOut, onOpenProfile }) => {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t">
           <nav className="flex flex-col p-4 space-y-2">
-            <button type="button" className="text-left text-gray-600">
-              Notifications
-            </button>
             <button type="button" className="text-left text-gray-600" onClick={handleProfile}>
-              My profile
+              Profile
             </button>
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-left text-red-600 font-semibold"
+              disabled={signingOut}
+              className="text-left text-red-600 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sign out
+              {signingOut ? 'Signing out...' : 'Sign out'}
             </button>
           </nav>
         </div>

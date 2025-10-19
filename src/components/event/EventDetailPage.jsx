@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BackIcon, BellIcon, UserCircleIcon } from '../shared/Icons';
+import { useEffect, useState } from 'react';
+import { BackIcon, UserCircleIcon } from '../shared/Icons';
 import { formatDate } from '../../utils/formatDate';
 
 const tabDefinitions = ['About', 'Rules', 'Timeline', 'Prizes', 'Contact'];
@@ -17,9 +17,59 @@ const prizeLabel = (key) => {
   }
 };
 
-const EventDetailPage = ({ event, onBack, onOpenRegistration }) => {
-  const { name, organizer, category, date, details = {}, img } = event;
+const capitalise = (value) => {
+  if (!value) return '';
+  if (typeof value !== 'string') return String(value);
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+};
+
+const EventDetailPage = ({
+  event,
+  onBack,
+  onOpenRegistration,
+  onOpenProfile,
+  registrationClosed = false,
+  hasParticipated = false,
+}) => {
+  const { name, organizer, category, type, date, details = {}, img } = event;
   const [activeTab, setActiveTab] = useState('About');
+  const [shareStatus, setShareStatus] = useState('');
+
+  const registrationDeadline = details.registrationDeadline ?? null;
+  const eventType = capitalise(type ?? details.type ?? 'Event');
+
+  const handleShare = async () => {
+    if (typeof window === 'undefined') {
+      setShareStatus('Sharing is only available in the browser.');
+      return;
+    }
+    const shareUrl = window.location.href;
+    const sharePayload = {
+      title: name,
+      text: `Check out the ${eventType.toLowerCase()} “${name}” on Arenate.`,
+      url: shareUrl,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(sharePayload);
+        setShareStatus('Shared successfully.');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareStatus('Link copied to clipboard.');
+      } else {
+        setShareStatus(`Share this link manually: ${shareUrl}`);
+      }
+    } catch (error) {
+      console.error('share link error', error);
+      setShareStatus('Unable to share right now. Try again later.');
+    }
+  };
+
+  useEffect(() => {
+    if (!shareStatus) return undefined;
+    const timeout = setTimeout(() => setShareStatus(''), 4000);
+    return () => clearTimeout(timeout);
+  }, [shareStatus]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -115,8 +165,29 @@ const EventDetailPage = ({ event, onBack, onOpenRegistration }) => {
               <span>Dashboard</span>
             </button>
             <div className="flex items-center space-x-4">
-              <BellIcon />
-              <UserCircleIcon />
+              <button
+                type="button"
+                onClick={handleShare}
+                className="rounded-full border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:text-gray-800"
+                aria-label="Share competition"
+              >
+                <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 8a3 3 0 10-2.83-4H12a3 3 0 100 6h.17M9 16l6-8m0 8a3 3 0 11-2.83 4H12a3 3 0 110-6h.17"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenProfile?.()}
+                className="rounded-full border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:text-gray-800"
+                aria-label="Open profile"
+              >
+                <UserCircleIcon />
+              </button>
             </div>
           </div>
         </div>
@@ -132,6 +203,21 @@ const EventDetailPage = ({ event, onBack, onOpenRegistration }) => {
             </span>
             <h1 className="text-3xl md:text-5xl font-bold">{name}</h1>
             <h2 className="text-lg md:text-xl font-light">Organized by {organizer}</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="rounded-full bg-white/20 px-3 py-1 font-semibold uppercase tracking-wide">
+                {eventType}
+              </span>
+              {hasParticipated && (
+                <span className="rounded-full bg-green-600/80 px-3 py-1 font-semibold text-white">
+                  You’re participating
+                </span>
+              )}
+              {registrationClosed && (
+                <span className="rounded-full bg-red-600/80 px-3 py-1 font-semibold text-white">
+                  Registration closed
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -162,6 +248,14 @@ const EventDetailPage = ({ event, onBack, onOpenRegistration }) => {
               <h3 className="text-xl font-bold border-b pb-2">Event Details</h3>
               <div className="flex items-center text-gray-700">
                 <svg className="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                <div>
+                  <strong>Type:</strong> {eventType}
+                </div>
+              </div>
+              <div className="flex items-center text-gray-700">
+                <svg className="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
                 <div>
@@ -187,14 +281,27 @@ const EventDetailPage = ({ event, onBack, onOpenRegistration }) => {
               </div>
               <div className="p-4 bg-peach-50 border border-peach-200 rounded-lg mt-4 text-center">
                 <p className="font-bold text-gray-800">Registration Closes</p>
-                <p className="text-red-600 font-semibold">{formatDate(details.registrationDeadline)}</p>
+                <p className="text-red-600 font-semibold">
+                  {registrationDeadline ? formatDate(registrationDeadline) : 'To be announced'}
+                </p>
               </div>
-              <button
-                className="w-full mt-4 bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition transform hover:scale-105 shadow hover:shadow-lg"
-                onClick={onOpenRegistration}
-              >
-                Register / Manage team
-              </button>
+              <div className="space-y-3">
+                <button
+                  className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+                  onClick={onOpenRegistration}
+                  disabled={registrationClosed}
+                >
+                  {registrationClosed ? 'Registration closed' : 'Register / Manage team'}
+                </button>
+                {shareStatus && (
+                  <p className="text-xs text-center text-gray-500">{shareStatus}</p>
+                )}
+              </div>
+              {registrationClosed && (
+                <p className="text-xs text-center text-gray-500">
+                  Registration closed on {registrationDeadline ? formatDate(registrationDeadline) : 'the specified deadline'}.
+                </p>
+              )}
             </div>
           </aside>
         </div>

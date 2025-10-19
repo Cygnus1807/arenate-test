@@ -4,6 +4,7 @@ export const mockEvents = [
     name: "Code Sprint '25",
     organizer: 'Tech Club',
     category: 'Tech',
+    type: 'Competition',
     date: '2025-10-15T10:00:00',
     img: 'https://placehold.co/600x400/a7f3d0/166534?text=Code+Sprint',
     details: {
@@ -49,27 +50,35 @@ export const mockEvents = [
     name: 'Melody Fest',
     organizer: 'Music Society',
     category: 'Cultural',
+    type: 'Event',
     date: '2025-10-20T18:00:00',
     img: 'https://placehold.co/600x400/fed7aa/7c2d12?text=Melody+Fest',
-    details: {},
+    details: {
+      registrationDeadline: '2025-10-18T23:59:00',
+    },
   },
   {
     id: 3,
     name: 'Startup Pitch Day',
     organizer: 'E-Cell',
-    category: 'Business',
+    category: 'Entrepreneurship',
+    type: 'Competition',
     date: '2025-10-22T14:00:00',
     img: 'https://placehold.co/600x400/bae6fd/0c4a6e?text=Pitch+Day',
-    details: {},
+    details: {
+      registrationDeadline: '2025-10-19T20:00:00',
+    },
   },
   {
     id: 4,
     name: 'Campus Premier League',
     organizer: 'Sports Committee',
     category: 'Sports',
+    type: 'Competition',
     date: '2025-10-25T09:00:00',
     img: 'https://placehold.co/600x400/d4d4d8/18181b?text=CPL+25',
     details: {
+      registrationDeadline: '2025-10-20T23:59:00',
       team: {
         isTeamEvent: true,
         minSize: 11,
@@ -83,9 +92,24 @@ export const mockEvents = [
     name: 'Robo Wars',
     organizer: 'Robotics Club',
     category: 'Tech',
+    type: 'Competition',
     date: '2025-11-01T11:00:00',
     img: 'https://placehold.co/600x400/fecaca/7f1d1d?text=Robo+Wars',
-    details: {},
+    details: {
+      registrationDeadline: '2025-10-28T23:59:00',
+    },
+  },
+  {
+    id: 6,
+    name: 'Designing Your Career Journey',
+    organizer: 'Student Success Office',
+    category: 'Experience',
+    type: 'Event',
+    date: '2025-11-10T16:00:00',
+    img: 'https://placehold.co/600x400/c7d2fe/1e1b4b?text=Career+Journey',
+    details: {
+      registrationDeadline: '2025-11-08T18:00:00',
+    },
   },
 ];
 
@@ -115,4 +139,4 @@ export const mockMyEvents = [
   { id: 4, name: 'Campus Premier League', deadline: '2025-10-20' },
 ];
 
-export const eventCategories = ['All', 'Tech', 'Cultural', 'Sports', 'Business'];
+export const eventCategories = ['All', 'Business', 'Entrepreneurship', 'Tech', 'Sports', 'Cultural', 'Experience'];

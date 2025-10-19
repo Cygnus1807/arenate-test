@@ -8,6 +8,8 @@ const ProfilePage = ({ initialProfile, onSave, saving = false, error, onSkip }) 
     phone: initialProfile?.phone ?? '',
     interests: initialProfile?.interests ?? '',
     bio: initialProfile?.bio ?? '',
+    collegeId: initialProfile?.collegeId ?? '',
+    collegeEmail: initialProfile?.collegeEmail ?? '',
   });
   const [formError, setFormError] = useState('');
 
@@ -17,8 +19,8 @@ const ProfilePage = ({ initialProfile, onSave, saving = false, error, onSkip }) 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!form.fullName || !form.department || !form.graduationYear) {
-      setFormError('Please complete your name, department, and graduation year.');
+    if (!form.fullName || !form.department || !form.graduationYear || !form.collegeId) {
+      setFormError('Please complete your name, department, college ID, and graduation year.');
       return;
     }
     setFormError('');
@@ -70,6 +72,21 @@ const ProfilePage = ({ initialProfile, onSave, saving = false, error, onSkip }) 
             />
           </div>
           <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="collegeId">
+              College unique ID
+            </label>
+            <input
+              id="collegeId"
+              type="text"
+              value={form.collegeId}
+              onChange={handleChange('collegeId')}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+              disabled={disabled}
+              placeholder="e.g. HCE2025CS123"
+            />
+            <p className="mt-1 text-xs text-gray-400">Used for verification with college records.</p>
+          </div>
+          <div>
             <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="graduationYear">
               Graduation year
             </label>
@@ -83,6 +100,20 @@ const ProfilePage = ({ initialProfile, onSave, saving = false, error, onSkip }) 
               placeholder="2026"
               min={new Date().getFullYear()}
               max={new Date().getFullYear() + 6}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="collegeEmail">
+              College email ID <span className="text-xs text-gray-400">(optional)</span>
+            </label>
+            <input
+              id="collegeEmail"
+              type="email"
+              value={form.collegeEmail}
+              onChange={handleChange('collegeEmail')}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
+              disabled={disabled}
+              placeholder="your.name@college.edu"
             />
           </div>
           <div>
@@ -134,7 +165,7 @@ const ProfilePage = ({ initialProfile, onSave, saving = false, error, onSkip }) 
               disabled={disabled}
               className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? 'Saving profile…' : 'Save profile'}
+              {saving ? 'Saving profile...' : 'Save profile'}
             </button>
             {onSkip && (
               <button type="button" onClick={onSkip} className="text-sm font-medium text-gray-500 hover:text-gray-700">

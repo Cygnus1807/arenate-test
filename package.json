@@ -11,9 +11,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
+    "health": "node scripts/healthCheck.mjs",
     "supabase:db-push": "supabase db push",
-    "supabase:db-reset": "supabase db reset --force"
+    "supabase:db-reset": "supabase db reset --force",
+    "seed": "node scripts/seedEvents.mjs",
+    "cleanup": "node scripts/cleanupTeams.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

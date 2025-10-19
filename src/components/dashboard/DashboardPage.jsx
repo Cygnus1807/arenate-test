@@ -23,21 +23,78 @@ const DashboardPage = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [participationFilter, setParticipationFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState('All');
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const featuredEvents = useMemo(() => events.slice(0, 3), [events]);
 
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setActiveFilter('All');
+    setParticipationFilter('All');
+    setStatusFilter('All');
+    setTypeFilter('All');
+  };
+
+  const participatedIds = useMemo(() => {
+    const ids = new Set();
+    (myEvents ?? []).forEach((item) => {
+      if (item?.id != null) {
+        ids.add(String(item.id));
+      }
+    });
+    return ids;
+  }, [myEvents]);
+
   const filteredEvents = useMemo(
     () =>
       events.filter((event) => {
+        const eventIdKey = event?.id != null ? String(event.id) : undefined;
         const matchesCategory = activeFilter === 'All' || event.category === activeFilter;
         const matchesSearch =
           event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
+        const isParticipating = eventIdKey ? participatedIds.has(eventIdKey) : false;
+        const matchesParticipation =
+          participationFilter === 'All' ||
+          (participationFilter === 'Participated' && isParticipating) ||
+          (participationFilter === 'Not Participated' && !isParticipating);
+        const registrationDeadline = event.details?.registrationDeadline ?? null;
+        const eventDate = event.date ?? null;
+        const now = Date.now();
+        const deadlineTime = registrationDeadline ? new Date(registrationDeadline).getTime() : null;
+        const eventTime = eventDate ? new Date(eventDate).getTime() : null;
+        const isClosed = deadlineTime != null ? deadlineTime < now : eventTime != null ? eventTime < now : false;
+        const matchesStatus =
+          statusFilter === 'All' ||
+          (statusFilter === 'Active' && !isClosed) ||
+          (statusFilter === 'Closed' && isClosed);
+        const eventType = (event.type ?? event.details?.type ?? 'Event').toString().toLowerCase();
+        const matchesType =
+          typeFilter === 'All' ||
+          (typeFilter === 'Event' && eventType === 'event') ||
+          (typeFilter === 'Competition' && eventType === 'competition');
+        return matchesCategory && matchesSearch && matchesParticipation && matchesStatus && matchesType;
       }),
-    [events, activeFilter, searchTerm],
+    [events, activeFilter, searchTerm, participationFilter, statusFilter, typeFilter, participatedIds],
   );
+
+  const defaultFiltersActive =
+    searchTerm.trim() === '' &&
+    activeFilter === 'All' &&
+    participationFilter === 'All' &&
+    statusFilter === 'All' &&
+    typeFilter === 'All';
+
+  const handleViewMyEvent = (eventId) => {
+    if (!eventId) return;
+    const match = events.find((event) => String(event.id) === String(eventId));
+    if (match) {
+      onViewEvent?.(match);
+    }
+  };
 
   const nextSlide = () => {
     if (featuredEvents.length === 0) return;
@@ -100,18 +157,26 @@ const DashboardPage = ({
               categories={categories}
               activeCategory={activeFilter}
               onCategoryChange={setActiveFilter}
+              participationFilter={participationFilter}
+              onParticipationFilterChange={setParticipationFilter}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              typeFilter={typeFilter}
+              onTypeFilterChange={setTypeFilter}
+              onResetFilters={handleResetFilters}
+              filtersPristine={defaultFiltersActive}
             />
             {showEmptyState ? (
               <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
                 No events match your filters just yet.
               </div>
             ) : (
-              <EventGrid events={filteredEvents} onView={onViewEvent} />
+              <EventGrid events={filteredEvents} onView={onViewEvent} participatedIds={participatedIds} />
             )}
           </div>
           <div className="lg:col-span-4 xl:col-span-3 space-y-8">
             <AnnouncementsPanel announcements={announcements} />
-            <MyEventsPanel events={myEvents} />
+            <MyEventsPanel events={myEvents} onViewEvent={handleViewMyEvent} />
           </div>
         </div>
       </main>

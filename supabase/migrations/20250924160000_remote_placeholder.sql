@@ -1,0 +1,2 @@
+-- Placeholder migration to mirror remote history.
+-- Actual migration already applied remotely.

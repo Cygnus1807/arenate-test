@@ -11,7 +11,8 @@ import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useTeamManager } from './hooks/useTeamManager';
 
-const isProfileComplete = (profile) => Boolean(profile && profile.fullName && profile.department && profile.graduationYear);
+const isProfileComplete = (profile) =>
+  Boolean(profile && profile.fullName && profile.department && profile.graduationYear && profile.collegeId);
 const deriveTeamConfig = (details = {}) => {
   const team = details.team ?? {};
   const rawMin = team.minSize ?? team.min_size ?? details.teamMinSize ?? details.team_min_size;
@@ -64,7 +65,7 @@ const DashboardRoute = ({
   );
 };
 
-const EventDetailRoute = ({ session, events, registerForEvent, refreshEvents }) => {
+const EventDetailRoute = ({ session, events, myEvents, registerForEvent, refreshEvents }) => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,6 +80,10 @@ const EventDetailRoute = ({ session, events, registerForEvent, refreshEvents }) 
     null;
 
   const teamConfig = deriveTeamConfig(event?.details ?? {});
+  const registrationDeadline = event?.details?.registrationDeadline ?? null;
+  const registrationClosed = registrationDeadline ? new Date(registrationDeadline) < new Date() : false;
+  const participationSet = useMemo(() => new Set((myEvents ?? []).map((item) => item.id)), [myEvents]);
+  const hasParticipated = event ? participationSet.has(event.id) : false;
   const teamManager = useTeamManager({
     eventId: event?.id ?? eventId,
     userId,
@@ -96,6 +101,14 @@ const EventDetailRoute = ({ session, events, registerForEvent, refreshEvents }) 
   }
 
   const handleSoloRegister = async () => {
+    if (registrationClosed) {
+      setSoloStatus({ message: '', error: 'Registration deadline has passed.' });
+      return;
+    }
+    if (hasParticipated) {
+      setSoloStatus({ message: 'You are already registered for this competition.', error: '' });
+      return;
+    }
     setSoloSubmitting(true);
     setSoloStatus({ message: '', error: '' });
     const result = await registerForEvent({
@@ -124,7 +137,14 @@ const EventDetailRoute = ({ session, events, registerForEvent, refreshEvents }) 
       <EventDetailPage
         event={event}
         onBack={() => navigate(-1)}
-        onOpenRegistration={() => setDrawerOpen(true)}
+        onOpenRegistration={() => {
+          if (!registrationClosed) {
+            setDrawerOpen(true);
+          }
+        }}
+        onOpenProfile={() => navigate('/profile')}
+        registrationClosed={registrationClosed}
+        hasParticipated={hasParticipated}
       />
       <EventRegistrationDrawer
         open={drawerOpen}
@@ -135,6 +155,8 @@ const EventDetailRoute = ({ session, events, registerForEvent, refreshEvents }) 
         soloAction={soloAction}
         teamManager={teamManager}
         userId={userId}
+        registrationClosed={registrationClosed}
+        hasParticipated={hasParticipated}
         onRegistrationComplete={() => {
           refreshEvents();
           setDrawerOpen(false);
@@ -224,6 +246,7 @@ const AuthenticatedApp = ({
             <EventDetailRoute
               session={session}
               events={events}
+              myEvents={myEvents}
               registerForEvent={registerForEvent}
               refreshEvents={refreshEvents}
             />

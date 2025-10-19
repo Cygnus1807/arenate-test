@@ -9,8 +9,8 @@ const ProfilePrompt = ({ onOpenProfile }) => {
         <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-blue-900">
           <p className="font-medium">Next steps:</p>
           <ol className="mt-2 list-decimal space-y-2 pl-5">
-            <li>Click the avatar in the top-right corner labelled <strong>My profile</strong>.</li>
-            <li>Fill in your department, graduation year, and interests.</li>
+            <li>Tap the profile icon in the top-right corner of the dashboard.</li>
+            <li>Fill in your department, college ID, graduation year, and interests.</li>
             <li>Save your profile to unlock registrations and recommendations.</li>
           </ol>
         </div>
